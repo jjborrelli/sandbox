@@ -132,7 +132,7 @@ plotWC(abs,8,"Accent")
 
 #Step two make a network of the participants
 
-profs<-c("Heather Lynch","Catherine H. Graham","Lev Ginsburg","H. Resit Akcakaya","Diana Padilla","John True")
+profs<-c("Heather Lynch","Catherine H. Graham","Lev Ginsburg","H. Resit Akcakaya","Diana Padilla","John True","Walt Eanes","Mike Bell","Jeff Levington","Brenna Henn")
 abs_all<-lapply(profs,function(x){
   abs<-getAbstracts(x,"Stony Brook",2010,2014,10)  
 }
