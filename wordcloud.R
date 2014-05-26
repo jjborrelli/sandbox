@@ -132,9 +132,9 @@ plotWC(abs,8,"Accent")
 
 #Step two make a network of the participants
 
-profs<-c("Heather Lynch","Catherine H. Graham","Lev Ginsburg","H. Resit Akcakaya","Diana Padilla","John True","Walt Eanes","Mike Bell","Jeff Levington","Brenna Henn")
+profs<-c("Heather J. Lynch","Catherine H. Graham","Lev Ginsburg","H. Resit Akcakaya","Diana Padilla","John R. True","Walt Eanes","Mike Bell","Jeff S. Levinton","Brenna Henn", "Liliana M. Davalos","Joshua S. Rest","Jessica Gurevitch","Stephen B. Baines")
 abs_all<-lapply(profs,function(x){
-  abs<-getAbstracts(x,"Stony Brook",2010,2014,10)  
+  abs<-getAbstracts(x,"Stony Brook",2000,2014,20)  
 }
 )
 
@@ -161,4 +161,52 @@ me<-lapply(abs_all,function(x){
 names(me)<-profs
 mem<-melt(me,id.var=c("word","freq"))
 
-#plot interaction network
+#what are the strongest interacting words
+word_matrix<-acast(mem,L1~word,value.var="freq",fill=0)
+
+#as distance matrix
+dist_matrix<-dist(word_matrix)
+
+#To do only keep shared words?
+
+g<-graph.adjacency(as.matrix(dist_matrix),diag=FALSE,mode="lower",weighted=TRUE)
+
+#names of the vertices you just imported:
+V(g)$name
+E(g)$size
+
+plot.igraph(g,layout=layout.fruchterman.reingold, edge.color="black",edge.width=E(g)$weight/50) 
+
+#color by weight
+cols<-gray(E(g)$weight/max(E(g)$weight))
+
+plot.igraph(g,layout=layout.fruchterman.reingold, edge.color=cols,edge.width=E(g)$weight/50) 
+
+#that was grey, try color
+
+colramp<-colorRampPalette(c("blue","red"))(length(E(g)$weight))
+
+#original order
+orig<-E(g)$weight/max(E(g)$weight)
+
+orig.order<-data.frame(orig,1:length(orig))
+
+weight.order<-orig.order[order(E(g)$weight/max(E(g)$weight)),]
+
+#merge with col
+colramp.w<-data.frame(weight.order,colramp)
+
+#get original order
+colsRB<-colramp.w[order(colramp.w$X1.length.orig.),]
+
+plot.igraph(g,layout=layout.fruchterman.reingold, edge.color=as.character(colsRB$colramp),edge.width=(E(g)$weight/100)) 
+
+mem$word<-as.character(mem$word)
+
+
+#make another prettier graph
+
+## Test
+plot(g,edge.arrow.size=E(g)$size/10)
+
+mem[order(mem$freq,decreasing=TRUE),][1:20,]
