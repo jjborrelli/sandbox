@@ -11,6 +11,10 @@ library("tm")
 require(reshape)
 require(sna)
 require(bipartite)
+require(igraph)
+require(ggplot2)
+require(grid)
+require(reshape2)
 
 #source functions
 getAbstracts <- function(author,university, dFrom, dTill, nRecs)
@@ -132,7 +136,7 @@ plotWC(abs,8,"Accent")
 
 #Step two make a network of the participants
 
-profs<-c("Heather J. Lynch","Catherine H. Graham","Lev Ginsburg","H. Resit Akcakaya","Diana Padilla","John R. True","Walt Eanes","Mike Bell","Jeff S. Levinton","Brenna Henn", "Liliana M. Davalos","Joshua S. Rest","Jessica Gurevitch","Stephen B. Baines")
+profs<-c("Heather J. Lynch","Catherine H. Graham","Lev Ginzburg","H. Resit Akcakaya","Diana Padilla","John R. True","Walt Eanes","Mike Bell","Jeff S. Levinton","Brenna Henn", "Liliana M. Davalos","Joshua S. Rest","Jessica Gurevitch","Stephen B. Baines")
 abs_all<-lapply(profs,function(x){
   abs<-getAbstracts(x,"Stony Brook",2000,2014,20)  
 }
@@ -142,7 +146,7 @@ abs_all<-lapply(profs,function(x){
 plotWC(abs_all,8,"Accent")
 
 #seperate into individual matrices
-abstTxt <- Corpus(VectorSource(abstracts))
+abstTxt <- Corpus(VectorSource(abs))
 
 me<-lapply(abs_all,function(x){
   abstTxt <- Corpus(VectorSource(x))
@@ -210,3 +214,31 @@ mem$word<-as.character(mem$word)
 plot(g,edge.arrow.size=E(g)$size/10)
 
 mem[order(mem$freq,decreasing=TRUE),][1:20,]
+
+pos <- data.frame(x = sample(1:20, 14), y = sample(1:20, 14), name = V(g)$name)
+edges <- get.edgelist(g)
+x1 <- c()
+y1 <- c()
+x2 <- c()
+y2 <- c()
+for(i in 1:nrow(edges)){
+  x1[i] <- pos$x[which(edges[i,1] == pos$name)]
+  y1[i] <- pos$y[which(edges[i,1] == pos$name)]
+  x2[i] <- pos$x[which(edges[i,2] == pos$name)]
+  y2[i] <- pos$y[which(edges[i,2] == pos$name)]
+}
+e <- data.frame(x1, y1, x2, y2)
+w <- E(g)$weight/100
+
+
+p <- ggplot(pos, aes(x = x, y = y)) 
+p <- p + geom_segment(data = e, aes(x = x1, y = y1, xend = x2, yend = y2), size = w, alpha = .75)
+p <- p + geom_point(size = 5, col = "red") 
+# the rest is just eliminating the background
+p <- p + scale_x_continuous(breaks = NULL) + scale_y_continuous(breaks = NULL) 
+p <- p + theme(panel.background = element_blank()) + theme(legend.position="none")
+p <- p + theme(axis.title.x = element_blank(), axis.title.y = element_blank()) 
+p <- p + theme( legend.background = element_rect(colour = NA)) 
+p <- p + theme(panel.background = element_rect(fill = "white", colour = NA)) 
+p <- p + theme(panel.grid.minor = element_blank(), panel.grid.major = element_blank())
+p
